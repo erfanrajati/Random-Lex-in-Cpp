@@ -1,4 +1,5 @@
 #include <iostream>
+#include <stdexcept>
 #include <string>
 #include <fstream>
 #include <map>
@@ -140,9 +141,23 @@ public:
     array<string, 2> findKW() { // Key Word
         return {};
     }
+
     array<string, 2> findDel() { // delimiters
+        array<char, 7> delimiters = {'[', ']', '{', '}', ';', '(', ')'};
+
+        char ch;
+        while (fileIN.get(ch)) {
+            for (char c : delimiters) {
+                if (ch == c) {
+                    string s(1, ch);
+                    return {s, "del"};
+                }
+            }
+            throw out_of_range("Not a Delimiter");
+        }
         return {};
     }
+
     array<string, 2> findString() { // string literals
         return {};
     }
@@ -173,7 +188,7 @@ int main() {
     }
 
     Scanner scanner(file);
-    array<string, 2> result = scanner.findOpr();
+    array<string, 2> result = scanner.findDel();
 
     for (string s:result)
         cout << s << endl;
