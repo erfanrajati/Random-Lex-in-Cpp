@@ -1,5 +1,6 @@
 #include <iostream>
 #include <stdexcept>
+#include <functional>
 #include <string>
 #include <fstream>
 #include <map>
@@ -8,23 +9,20 @@
 
 using namespace std;
 
-class StateDiagram {
-private:
-    map<
-        array<char, 2>,
-        char // next state
-    > products;
-
-public:
-    StateDiagram(map<array<char, 2>, char> products) : products(products) {} ;
-};
-
 
 class Scanner {
 // private:
 public:
     ifstream& fileIN;
     vector<array<string, 2>> tokens;
+    // array<function<array<string, 2>>(), 7> methods = {
+    //     findVar, findOpr, findDT, 
+    //     findKW, findDel, findString,
+    //     findNumber
+    // }; 
+    // to call them iteratively if any one of them failed.
+    // code can be ooptimized by changing the order of these functions.
+
 
     array<string, 2> findVar() { // returns the token, first str is the token and second is the token type
         // the cursor in the fileIN must be right after a $ sign at this point.
@@ -159,7 +157,6 @@ public:
         return {};
     }
 
-
 // public:
 
     Scanner(ifstream& fileIN) : fileIN(fileIN) { // pass by reference
@@ -182,6 +179,7 @@ public:
         return tokens;
     }
 };
+
 
 int main() {
     string fileName = "test.txt";
