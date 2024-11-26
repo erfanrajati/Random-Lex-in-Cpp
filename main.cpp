@@ -74,7 +74,7 @@ public:
         return {token, "id"};
     }
 
-    array<string, 2> findOpr(int first, int forward) {
+    array<string, 2> findOpr() {
         // the cursor must be on the first character of the operator.
 
         // grammar products map for finding variables
@@ -85,12 +85,12 @@ public:
 
         products[{"0", "i"}] = "1"; 
         products[{"1", "n"}] = "2"; 
-        products[{"2", "c"}] = "BACKTRACK"; // inc accepted, backtrack 
+        products[{"2", "c"}] = "ACCEPTED"; // inc accepted 
         products[{"0", "d"}] = "4"; 
         products[{"4", "i"}] = "5"; 
-        products[{"5", "v"}] = "BACKTRACK"; // div accepted, backtrack 
+        products[{"5", "v"}] = "ACCEPTED"; // div accepted 
         products[{"4", "e"}] = "7"; 
-        products[{"7", "c"}] = "BACKTRACK"; // dec accepted, backtrack
+        products[{"7", "c"}] = "ACCEPTED"; // dec accepted
         products[{"0", "+"}] = "ACCEPTED";
         products[{"0", "-"}] = "ACCEPTED";
         products[{"0", "*"}] = "ACCEPTED";
@@ -115,32 +115,41 @@ public:
         string state = "0";
         string token;
         while (fileIN.get(ch) && (state != "ACCEPTED" && state != "BACKTRACK")) {
+            // cout << "Currently checking: " << ch << endl; // Debug
             string edge(1, ch);
             try {
                 state = products.at({state, edge});
-                token += edge;
             } catch (const std::out_of_range& e) {
                 edge = "#"; // if it got any other character
                 state = products.at({state, edge}); // throws error if token must be DECLINED.
             }
             token += edge;
+            cout << "Token: " << token << endl;
         }
 
-        // Backtrack
-        fileIN.unget();
-        token.pop_back();
+        if (state == "BACKTRACK") {
+            fileIN.unget();
+            token.pop_back();
+        }
     
         return {token, "opr"};
     }
-    array<int, 2> findDT(int first, int forward) { // DataType
+    array<string, 2> findDT() { // DataType
         return {};
     }
-    array<int, 2> findKW(int first, int forward) { // Key Word
+    array<string, 2> findKW() { // Key Word
         return {};
     }
-    array<int, 2> findDel(int first, int forward) { // delimiters
+    array<string, 2> findDel() { // delimiters
         return {};
     }
+    array<string, 2> findString() { // string literals
+        return {};
+    }
+    array<string, 2> findNumber() { // numberic literals
+        return {};
+    }
+
 
 // public:
 
@@ -148,6 +157,10 @@ public:
         // char ch;
         // while (this->fileIN.get(ch))
         //     cout << ch;
+    }
+
+    void scan() { // where everything gets connected
+        // a list of all the methods, iterate and call, catch the exception.
     }
 };
 
@@ -160,7 +173,7 @@ int main() {
     }
 
     Scanner scanner(file);
-    array<string, 2> result = scanner.findVar();
+    array<string, 2> result = scanner.findOpr();
 
     for (string s:result)
         cout << s << endl;
