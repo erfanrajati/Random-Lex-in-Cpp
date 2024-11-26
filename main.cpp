@@ -3,6 +3,7 @@
 #include <fstream>
 #include <map>
 #include <array>
+#include <vector>
 
 using namespace std;
 
@@ -19,8 +20,10 @@ public:
 
 
 class Scanner {
-private:
+// private:
+public:
     ifstream& fileIN;
+    vector<array<string, 2>> tokens;
 
     map<char, char> Tokenize(string s) {
         map<char, char> m;
@@ -31,7 +34,7 @@ private:
 
     array<string, 2> findVar() { // returns the token, first str is the token and second is the token type
         // the cursor in the fileIN must be on a $ sign at this point.
-        
+
         // grammar products map for finding variables
         map<
             array<char, 2>,
@@ -44,19 +47,21 @@ private:
         products[{'2', '#'}] = '3'; // # stands for other, 3 is accepted state, needs backtrack
         
         char state, edge, ch;
+        state = '1';
         string token = "";
         while (fileIN.get(ch) && state != '3') {
+            cout << "Currently checking: " << ch << endl; // Debug
             int ascii = static_cast<int>(ch);
-            if (ascii >= 66 && ascii <= 90)
+            if (ascii >= 65 && ascii <= 90)
                 edge = 'U';
-            else if (ascii >= 96 && ascii <= 122)
+            else if (ascii >= 97 && ascii <= 122)
                 edge = 'L';
             else if (ascii >= 48 && ascii <= 57)
                 edge = 'D';
             else 
                 edge = '#';
 
-            // cout << state << edge << endl; // Debug
+            cout << state << edge << endl; // Debug
             state = products.at({state, edge}); // throws error if key does not exist.
             
             token += ch;
@@ -65,10 +70,10 @@ private:
         // Backtrack
         fileIN.unget();
         token.pop_back();
-
+    
         return {token, "id"};
     }
-    
+
     array<int, 2> findOpr(int first, int forward) {
         return {};
     }
@@ -82,7 +87,7 @@ private:
         return {};
     }
 
-public:
+// public:
 
     Scanner(ifstream& fileIN) : fileIN(fileIN) { // pass by reference
         // char ch;
@@ -94,11 +99,17 @@ public:
 int main() {
     string fileName = "test.txt";
     ifstream file(fileName);
-    if (!file.is_open())
+    if (!file.is_open()) {
         cout << "Couldn't find file: " + fileName << endl;
         return 0; 
+    }
 
-    Scanner scn(file);
+    Scanner scanner(file);
+    array<string, 2> result = scanner.findVar();
+
+    for (string s:result)
+        cout << s << endl;
+
     file.close();
     return 0;
 }
