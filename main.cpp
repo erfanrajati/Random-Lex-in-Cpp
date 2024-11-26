@@ -26,13 +26,6 @@ public:
     ifstream& fileIN;
     vector<array<string, 2>> tokens;
 
-    map<char, char> Tokenize(string s) {
-        map<char, char> m;
-        m['a'] = 'b';
-
-        return m;
-    }
-
     array<string, 2> findVar() { // returns the token, first str is the token and second is the token type
         // the cursor in the fileIN must be right after a $ sign at this point.
 
@@ -49,7 +42,7 @@ public:
         
         char state, edge, ch;
         state = '1';
-        string token = "";
+        string token = "$";
         while (fileIN.get(ch) && state != '3') {
             cout << "Currently checking: " << ch << endl; // Debug
             int ascii = static_cast<int>(ch);
@@ -120,7 +113,7 @@ public:
             string edge(1, ch);
             try {
                 state = products.at({state, edge});
-            } catch (const std::out_of_range& e) {
+            } catch (const out_of_range& e) {
                 edge = "#"; // if it got any other character
                 state = products.at({state, edge}); // throws error if token must be DECLINED.
             }
@@ -135,6 +128,7 @@ public:
     
         return {token, "opr"};
     }
+
     array<string, 2> findDT() { // DataType
         return {};
     }
@@ -174,8 +168,18 @@ public:
         //     cout << ch;
     }
 
-    void scan() { // where everything gets connected
-        // a list of all the methods, iterate and call, catch the exception.
+    vector<array<string, 2>> scan() { // where everything gets connected
+        char ch;
+        while (fileIN.get(ch)) {
+            if (ch == '$') 
+                try {
+                    tokens.push_back(this -> findVar());
+                } catch (const out_of_range& e) {
+                    cout << e.what();
+                }
+        }
+
+        return tokens;
     }
 };
 
@@ -188,10 +192,14 @@ int main() {
     }
 
     Scanner scanner(file);
-    array<string, 2> result = scanner.findDel();
+    vector<array<string, 2>> result = scanner.scan();
 
-    for (string s:result)
-        cout << s << endl;
+    for (array token:result) {
+        for (string s:token) {
+            cout << s + " ";
+        }
+        cout << endl;
+    }
 
     file.close();
     return 0;
