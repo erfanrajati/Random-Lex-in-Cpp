@@ -33,7 +33,7 @@ public:
     }
 
     array<string, 2> findVar() { // returns the token, first str is the token and second is the token type
-        // the cursor in the fileIN must be on a $ sign at this point.
+        // the cursor in the fileIN must be right after a $ sign at this point.
 
         // grammar products map for finding variables
         map<
@@ -62,7 +62,7 @@ public:
                 edge = '#';
 
             cout << state << edge << endl; // Debug
-            state = products.at({state, edge}); // throws error if key does not exist.
+            state = products.at({state, edge}); // throws error if token must be DECLINED.
             
             token += ch;
         }
@@ -74,8 +74,63 @@ public:
         return {token, "id"};
     }
 
-    array<int, 2> findOpr(int first, int forward) {
-        return {};
+    array<string, 2> findOpr(int first, int forward) {
+        // the cursor must be on the first character of the operator.
+
+        // grammar products map for finding variables
+        map<
+            array<string, 2>,
+            string // next state
+        > products;
+
+        products[{"0", "i"}] = "1"; 
+        products[{"1", "n"}] = "2"; 
+        products[{"2", "c"}] = "BACKTRACK"; // inc accepted, backtrack 
+        products[{"0", "d"}] = "4"; 
+        products[{"4", "i"}] = "5"; 
+        products[{"5", "v"}] = "BACKTRACK"; // div accepted, backtrack 
+        products[{"4", "e"}] = "7"; 
+        products[{"7", "c"}] = "BACKTRACK"; // dec accepted, backtrack
+        products[{"0", "+"}] = "ACCEPTED";
+        products[{"0", "-"}] = "ACCEPTED";
+        products[{"0", "*"}] = "ACCEPTED";
+        products[{"0", "/"}] = "ACCEPTED";
+        products[{"0", "^"}] = "ACCEPTED";
+        products[{"0", "="}] = "14";
+        products[{"14", "#"}] = "BACKTRACK"; // = accepted, backtrack
+        products[{"14", "="}] = "ACCEPTED"; // == accepted
+        products[{"0", ">"}] = "17";
+        products[{"17", "#"}] = "BACKTRACK"; // > accepted, backtrack
+        products[{"17", "="}] = "ACCEPTED"; // >= accepted
+        products[{"0", "<"}] = "20";
+        products[{"20", "#"}] = "BACKTRACK"; // = accepted, backtrack
+        products[{"20", "="}] = "ACCEPTED"; // <= accepted
+        products[{"20", ">"}] = "ACCEPTED"; // <> accepted
+
+        // for a real compiler, it is needed to have separated acceptance states for each token type.
+        // but for code simplicity here, I only consider tokens in one of three ways: 
+        // ACCEPTED, BACKTRACK, DECLINED.
+
+        char ch;
+        string state = "0";
+        string token;
+        while (fileIN.get(ch) && (state != "ACCEPTED" && state != "BACKTRACK")) {
+            string edge(1, ch);
+            try {
+                state = products.at({state, edge});
+                token += edge;
+            } catch (const std::out_of_range& e) {
+                edge = "#"; // if it got any other character
+                state = products.at({state, edge}); // throws error if token must be DECLINED.
+            }
+            token += edge;
+        }
+
+        // Backtrack
+        fileIN.unget();
+        token.pop_back();
+    
+        return {token, "opr"};
     }
     array<int, 2> findDT(int first, int forward) { // DataType
         return {};
