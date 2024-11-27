@@ -11,8 +11,7 @@ using namespace std;
 
 
 class Scanner {
-// private:
-public:
+private:
     ifstream& fileIN;
     vector<array<string, 2>> tokens;
     // array<function<array<string, 2>>(), 4> methods = { 
@@ -281,7 +280,7 @@ public:
         return {token, "num"};       
     }
 
-// public:
+public:
 
     Scanner(ifstream& fileIN) : fileIN(fileIN) { // pass by reference
         // char ch;
