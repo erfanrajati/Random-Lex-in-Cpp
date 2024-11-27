@@ -23,7 +23,7 @@ public:
 
 
     array<string, 2> findID(char begin) { 
-        cout << "Lex Log: Running findID" << endl; // Debug
+        // cout << "Lex Log: Running findID" << endl; // Debug
         // tokenized variables (begin = $), functions(begin = &), classes(begin = @)
 
         // grammar products map for finding variables
@@ -42,7 +42,7 @@ public:
         state = '1';
         string token(1, begin);
         while (fileIN.get(ch) && state != '3') {
-            cout << "findID Log: Currently checking " << ch << endl; // Debug
+            // cout << "findID Log: Currently checking " << ch << endl; // Debug
             int ascii = static_cast<int>(ch);
             if (ascii >= 65 && ascii <= 90)
                 edge = 'U';
@@ -53,7 +53,7 @@ public:
             else 
                 edge = '#';
 
-            cout << "State Diagram Log: " << state << edge << endl; // Debug
+            // cout << "State Diagram Log: " << state << edge << endl; // Debug
             state = products.at({state, edge}); // throws error if token must be DECLINED.
             
             token += ch;
@@ -61,7 +61,7 @@ public:
 
         // Backtrack
         fileIN.seekg(-3, ios::cur);
-        cout << "findID Log, cursor at: " << static_cast<char>(fileIN.peek()) << endl;
+        // cout << "findID Log, cursor at: " << static_cast<char>(fileIN.peek()) << endl; // Debug
         token.pop_back();
         
         string type;
@@ -114,7 +114,7 @@ public:
         string state = "0";
         string token;
         while (fileIN.get(ch) && (state != "ACCEPTED" && state != "BACKTRACK")) {
-            cout << "findOpr Log: Currently checking " << ch << endl; // Debug
+            // cout << "findOpr Log: Currently checking " << ch << endl; // Debug
             string edge(1, ch);
             try {
                 state = products.at({state, edge});
@@ -123,7 +123,7 @@ public:
                 state = products.at({state, edge}); // throws error if token must be DECLINED.
             }
             token += edge;
-            cout << "Token: " << token << endl;
+            // cout << "Token: " << token << endl; // Debug
         }
 
         if (state == "BACKTRACK") {
@@ -190,7 +190,7 @@ public:
         string state = "0";
         string token = "";
         while (fileIN.get(ch) && state != "ACCEPTED") {
-            cout << "findKW Log, Currently checking: " << ch << endl;
+            // cout << "findKW Log, Currently checking: " << ch << endl; // Debug
             string edge(1, ch);
             state = products.at({state, edge});
             token += ch;
@@ -216,7 +216,7 @@ public:
     }
 
     array<string, 2> findString(char begin) { // string literals
-        cout << "Lex Log: Running findString" << endl;
+        // cout << "Lex Log: Running findString" << endl; // Debug
         // Lex must've gotten a double quotation (") at this point
 
         // grammar products map for finding variables
@@ -233,10 +233,10 @@ public:
         state = '1';
         string token(1, begin);
         while (fileIN.get(ch) && state != '2') {
-            cout << "findString Log: Currently checking " << ch << endl; // Debug
+            // cout << "findString Log: Currently checking " << ch << endl; // Debug
             edge = (ch == '"') ? ch : 'A';
 
-            cout << "State Diagram Log: " << state << edge << endl; // Debug
+            // cout << "State Diagram Log: " << state << edge << endl; // Debug
 
             state = products.at({state, edge}); // throws error if token must be DECLINED.
             token += ch;
@@ -261,21 +261,21 @@ public:
         state = '0';
         string token = "";
         while (fileIN.get(ch) && state != '2') {
-            cout << "findID Log: Currently checking " << ch << endl; // Debug
+            // cout << "findID Log: Currently checking " << ch << endl; // Debug
             int ascii = static_cast<int>(ch);
             if (ascii >= 48 && ascii <= 57)
                 edge = 'D';
             else 
                 edge = '#';
 
-            cout << "State Diagram Log: " << state << edge << endl; // Debug
+            // cout << "State Diagram Log: " << state << edge << endl; // Debug
             state = products.at({state, edge}); // throws error if token must be DECLINED.
             
             token += ch;
         }
 
         fileIN.unget();
-        cout << "findID Log, cursor at: " << static_cast<char>(fileIN.peek()) << endl;
+        // cout << "findID Log, cursor at: " << static_cast<char>(fileIN.peek()) << endl; // Debug
         token.pop_back();
         
         return {token, "num"};       
@@ -297,9 +297,9 @@ public:
                 fileIN.get(ch);
                 try {
                     tokens.push_back(this -> findID(ch));
-                    cout << "Scan Log: token appended." << endl;
+                    // cout << "Scan Log: token appended." << endl; // Debug
                 } catch (const out_of_range& e) {
-                    cout << e.what() << endl;
+                    cout << "Miss use of Identifier near character: " << ch << endl;
                 }
             }
             else if (
@@ -311,11 +311,11 @@ public:
                 ch == 'i' ||
                 ch == 'e'
             ) { // findKW
-                cout << "Scan Log, Currently checking: " << ch << endl;
+                // cout << "Scan Log, Currently checking: " << ch << endl; // Debug
 
                 try {
                     tokens.push_back(this -> findKW());
-                    cout << "Scan Log: token appended." << endl;
+                    // cout << "Scan Log: token appended." << endl; // Debug
                 } catch (const out_of_range& e) {
                     cout << e.what() << endl;
                 }
@@ -325,13 +325,13 @@ public:
                 ch == 'd' ||
                 ch == 'i'
             ) {
-                cout << "Scan Log, Currently checking: " << ch << endl;
+                // cout << "Scan Log, Currently checking: " << ch << endl; // Debug
 
                 try {
                     tokens.push_back(this -> findOpr());
-                    cout << "Scan Log: token appended." << endl;
+                    // cout << "Scan Log: token appended." << endl; // Debug
                 } catch (const out_of_range& e) {
-                    cout << e.what() << endl;
+                    cout << "Miss use of operator near character: " << ch << endl;
                 }
 
             } else if ( // findDel
@@ -345,24 +345,24 @@ public:
             ) {
                 try {
                     tokens.push_back(this -> findDel());
-                    cout << "Scan Log: token appended." << endl;
+                    // cout << "Scan Log: token appended." << endl; // Debug
                 } catch (const out_of_range& e) {
-                    cout << e.what() << endl;
+                    cout << "Miss use of Delimiter near character: " << ch << endl;
                 }
             } else if (ascii >= 48 && ascii <= 57) { // findString
                 try {
                     tokens.push_back(this -> findNumber());
-                    cout << "Scan Log: token appended." << endl;
+                    // cout << "Scan Log: token appended." << endl; // Debug
                 } catch (const out_of_range& e) {
-                    cout << e.what() << endl;
+                    cout << "Miss use of Number near character: " << ch << endl;
                 }
             } else if (ch == '"') { // findString
                 fileIN.get(ch);
                 try {
                     tokens.push_back(this -> findString(ch));
-                    cout << "Scan Log: token appended." << endl;
+                    // cout << "Scan Log: token appended." << endl; // Debug
                 } catch (const out_of_range& e) {
-                    cout << e.what() << endl;
+                    cout << "Miss use of String near character: " << ch << endl;
                 }
             } else 
                 fileIN.get(ch);
