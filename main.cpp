@@ -24,8 +24,8 @@ public:
     // code can be ooptimized by changing the order of these functions.
 
 
-    array<string, 2> findVar() { // returns the token, first str is the token and second is the token type
-        // the cursor in the fileIN must be right after a $ sign at this point.
+    array<string, 2> findID(char begin) { 
+        // tokenized variables (begin = $), functions(begin = &), classes(begin = @)
 
         // grammar products map for finding variables
         map<
@@ -40,7 +40,7 @@ public:
         
         char state, edge, ch;
         state = '1';
-        string token = "$";
+        string token(1, begin);
         while (fileIN.get(ch) && state != '3') {
             cout << "Currently checking: " << ch << endl; // Debug
             int ascii = static_cast<int>(ch);
@@ -62,8 +62,14 @@ public:
         // Backtrack
         fileIN.unget();
         token.pop_back();
-    
-        return {token, "id"};
+        
+        string type;
+        switch (begin) {
+            case '$': type = "var"; break;
+            case '&': type = "func"; break;
+            case '@': type = "class"; break;
+        }
+        return {token, type};
     }
 
     array<string, 2> findOpr() {
@@ -77,10 +83,10 @@ public:
 
         products[{"0", "i"}] = "1"; 
         products[{"1", "n"}] = "2"; 
-        products[{"2", "c"}] = "ACCEPTED"; // inc accepted 
+        products[{"2", "c"}] = "ACCEPTED"; // inc accepted
         products[{"0", "d"}] = "4"; 
         products[{"4", "i"}] = "5"; 
-        products[{"5", "v"}] = "ACCEPTED"; // div accepted 
+        products[{"5", "v"}] = "ACCEPTED"; // div accepted
         products[{"4", "e"}] = "7"; 
         products[{"7", "c"}] = "ACCEPTED"; // dec accepted
         products[{"0", "+"}] = "ACCEPTED";
@@ -168,9 +174,9 @@ public:
     vector<array<string, 2>> scan() { // where everything gets connected
         char ch;
         while (fileIN.get(ch)) {
-            if (ch == '$') 
+            if (ch == '$' || ch == '&' || ch == '@') 
                 try {
-                    tokens.push_back(this -> findVar());
+                    tokens.push_back(this -> findID(ch));
                 } catch (const out_of_range& e) {
                     cout << e.what();
                 }
@@ -192,6 +198,8 @@ int main() {
     Scanner scanner(file);
     vector<array<string, 2>> result = scanner.scan();
 
+    
+    // Debug
     for (array token:result) {
         for (string s:token) {
             cout << s + " ";
