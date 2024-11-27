@@ -137,7 +137,67 @@ public:
         return {};
     }
     array<string, 2> findKW() { // Key Word
-        return {};
+        // Lex has gotten any char in {f, c, r, u, w, i, e} (first letter of all keywords)
+        // grammar products map for finding variables
+        map<
+            array<string, 2>,
+            string // next state
+        > products;
+
+        products[{"0", "f"}] = "1"; // checks for func / for
+        products[{"1", "o"}] = "8";        
+        products[{"8", "r"}] = "9"; // for accepted
+        products[{"1", "u"}] = "10";       
+        products[{"10", "n"}] = "11";       
+        products[{"11", "c"}] = "ACCEPTED"; // func accepted  
+
+        products[{"0", "c"}] = "2"; // checks for class
+        products[{"2", "l"}] = "13";
+        products[{"13", "a"}] = "14";
+        products[{"14", "s"}] = "15";
+        products[{"15", "s"}] = "ACCEPTED"; // class accepted
+
+        products[{"0", "r"}] = "3"; // checks for repeat
+        products[{"3", "e"}] = "17";
+        products[{"17", "p"}] = "18";
+        products[{"18", "e"}] = "19";
+        products[{"19", "a"}] = "20";
+        products[{"20", "t"}] = "ACCEPTED"; // repeat accepted
+
+        products[{"0", "u"}] = "4"; // checks for until
+        products[{"4", "n"}] = "22";  
+        products[{"22", "t"}] = "23";  
+        products[{"23", "i"}] = "24";  
+        products[{"24", "l"}] = "ACCEPTED"; // until accepted
+
+        products[{"0", "w"}] = "5"; // checks for while
+        products[{"5", "h"}] = "26"; 
+        products[{"26", "i"}] = "27"; 
+        products[{"27", "l"}] = "28"; 
+        products[{"28", "e"}] = "ACCEPTED"; // while accepted
+
+        products[{"0", "i"}] = "6"; // checks for if
+        products[{"6", "f"}] = "ACCEPTED"; // if accepted
+
+        products[{"0", "e"}] = "7"; // checks for else / elif
+        products[{"7", "l"}] = "31"; 
+        products[{"31", "s"}] = "32"; 
+        products[{"32", "e"}] = "ACCEPTED"; // else accepted
+
+        products[{"7", "l"}] = "34"; 
+        products[{"34", "i"}] = "35"; 
+        products[{"35", "f"}] = "ACCEPTED"; // elif accepted
+
+        char ch;
+        string state = "0";
+        string token = "";
+        while (fileIN.get(ch) && state != "ACCEPTED") {
+            string edge(1, ch);
+            state = products.at({state, edge});
+            token += ch;
+        }
+
+        return {token, "KeyWord"};
     }
 
     array<string, 2> findDel() { // delimiters
@@ -225,12 +285,14 @@ int main() {
     Scanner scanner(file);
     // vector<array<string, 2>> result = scanner.scan();
 
-    char begin;
-    file.get(begin);
-    array<string, 2> result = scanner.findString(begin);
 
     
     // Debug
+    
+    char begin;
+    // file.get(begin);
+    array<string, 2> result = scanner.findKW();
+
     // for (array token:result) {
     //     for (string s:token) {
     //         cout << s + " ";
