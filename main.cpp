@@ -33,16 +33,16 @@ public:
             char // next state
         > products;
 
-        products[{'1', 'U'}] = '2'; // U stands for upper case
-        products[{'2', 'L'}] = '2'; // L stands for lower case
-        products[{'2', 'D'}] = '2'; // D stands for digit 
-        products[{'2', '#'}] = '3'; // # stands for other, 3 is accepted state, needs backtrack
+        products[{'1', 'U'}] = '1'; // U stands for upper case
+        products[{'1', 'L'}] = '1'; // L stands for lower case
+        products[{'1', 'D'}] = '1'; // D stands for digit 
+        products[{'1', '"'}] = '2'; // # stands for other, 3 is accepted state, needs backtrack
         
         char state, edge, ch;
         state = '1';
         string token(1, begin);
         while (fileIN.get(ch) && state != '3') {
-            cout << "Currently checking: " << ch << endl; // Debug
+            cout << "Lex Log: Currently checking " << ch << endl; // Debug
             int ascii = static_cast<int>(ch);
             if (ascii >= 65 && ascii <= 90)
                 edge = 'U';
@@ -53,7 +53,7 @@ public:
             else 
                 edge = '#';
 
-            cout << state << edge << endl; // Debug
+            cout << "State Diagram Log: " << state << edge << endl; // Debug
             state = products.at({state, edge}); // throws error if token must be DECLINED.
             
             token += ch;
@@ -113,7 +113,7 @@ public:
         string state = "0";
         string token;
         while (fileIN.get(ch) && (state != "ACCEPTED" && state != "BACKTRACK")) {
-            // cout << "Currently checking: " << ch << endl; // Debug
+            // cout << "Lex Log: Currently checking " << ch << endl; // Debug
             string edge(1, ch);
             try {
                 state = products.at({state, edge});
@@ -156,9 +156,36 @@ public:
         return {};
     }
 
-    array<string, 2> findString() { // string literals
-        return {};
+    array<string, 2> findString(char begin) { // string literals
+        cout << "Lex Log: Running findString" << endl;
+        // Lex must've gotten a double quotation (") at this point
+
+        // grammar products map for finding variables
+        map<
+            array<char, 2>,
+            char // next state
+        > products;
+
+        products[{'1', 'A'}] = '1'; // A stands for Ascii allowed characters
+        products[{'1', '"'}] = '2'; // " is the end of string
+
+        
+        char state, edge, ch;
+        state = '1';
+        string token(1, begin);
+        while (fileIN.get(ch) && state != '2') {
+            cout << "Lex Log: Currently checking " << ch << endl; // Debug
+            edge = (ch == '"') ? ch : 'A';
+
+            cout << "State Diagram Log: " << state << edge << endl; // Debug
+
+            state = products.at({state, edge}); // throws error if token must be DECLINED.
+            token += ch;
+        }
+
+        return {token, "str"};
     }
+    
     array<string, 2> findNumber() { // numberic literals
         return {};
     }
@@ -196,16 +223,23 @@ int main() {
     }
 
     Scanner scanner(file);
-    vector<array<string, 2>> result = scanner.scan();
+    // vector<array<string, 2>> result = scanner.scan();
+
+    char begin;
+    file.get(begin);
+    array<string, 2> result = scanner.findString(begin);
 
     
     // Debug
-    for (array token:result) {
-        for (string s:token) {
-            cout << s + " ";
-        }
-        cout << endl;
-    }
+    // for (array token:result) {
+    //     for (string s:token) {
+    //         cout << s + " ";
+    //     }
+    //     cout << endl;
+    // }
+
+    for (string s : result) 
+        cout << s << ' ';
 
     file.close();
     return 0;
