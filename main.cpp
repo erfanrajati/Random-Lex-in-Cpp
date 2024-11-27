@@ -298,7 +298,7 @@ public:
                     tokens.push_back(this -> findID(ch));
                     // cout << "Scan Log: token appended." << endl; // Debug
                 } catch (const out_of_range& e) {
-                    cout << "Miss use of Identifier near character: " << ch << endl;
+                    cout << "Miss use of Identifier near index: " << fileIN.tellg() << endl;
                 }
             }
             else if (
@@ -330,7 +330,7 @@ public:
                     tokens.push_back(this -> findOpr());
                     // cout << "Scan Log: token appended." << endl; // Debug
                 } catch (const out_of_range& e) {
-                    cout << "Miss use of operator near character: " << ch << endl;
+                    cout << "Miss use of operator near character: " << fileIN.tellg() << endl;
                 }
 
             } else if ( // findDel
@@ -346,14 +346,14 @@ public:
                     tokens.push_back(this -> findDel());
                     // cout << "Scan Log: token appended." << endl; // Debug
                 } catch (const out_of_range& e) {
-                    cout << "Miss use of Delimiter near character: " << ch << endl;
+                    cout << "Miss use of Delimiter near character: " << fileIN.tellg() << endl;
                 }
             } else if (ascii >= 48 && ascii <= 57) { // findString
                 try {
                     tokens.push_back(this -> findNumber());
                     // cout << "Scan Log: token appended." << endl; // Debug
                 } catch (const out_of_range& e) {
-                    cout << "Miss use of Number near character: " << ch << endl;
+                    cout << "Miss use of Number near character: " << fileIN.tellg() << endl;
                 }
             } else if (ch == '"') { // findString
                 fileIN.get(ch);
@@ -361,7 +361,7 @@ public:
                     tokens.push_back(this -> findString(ch));
                     // cout << "Scan Log: token appended." << endl; // Debug
                 } catch (const out_of_range& e) {
-                    cout << "Miss use of String near character: " << ch << endl;
+                    cout << "Miss use of String near character: " << fileIN.tellg() << endl;
                 }
             } else 
                 fileIN.get(ch);

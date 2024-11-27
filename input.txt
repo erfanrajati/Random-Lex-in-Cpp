@@ -3,3 +3,14 @@ while [$Scj] {
 }
 
 $Bodj + 123 + "dpinw" dohow
+
+class @Person {
+    $name = "HEllo";
+    func &SayHi(&Int $Input) {
+        &print("Hello, World");
+    }
+
+    repeat [&Int $i; dec $i] {
+
+    }
+}
