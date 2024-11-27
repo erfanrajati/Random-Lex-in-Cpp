@@ -15,16 +15,15 @@ class Scanner {
 public:
     ifstream& fileIN;
     vector<array<string, 2>> tokens;
-    // array<function<array<string, 2>>(), 7> methods = {
-    //     findVar, findOpr, findDT, 
-    //     findKW, findDel, findString,
-    //     findNumber
+    // array<function<array<string, 2>>(), 4> methods = { 
+    //     findOpr, findDel, findString, findNumber
     // }; 
     // to call them iteratively if any one of them failed.
     // code can be ooptimized by changing the order of these functions.
 
 
     array<string, 2> findID(char begin) { 
+        cout << "Lex Log: Running findID" << endl; // Debug
         // tokenized variables (begin = $), functions(begin = &), classes(begin = @)
 
         // grammar products map for finding variables
@@ -33,16 +32,17 @@ public:
             char // next state
         > products;
 
-        products[{'1', 'U'}] = '1'; // U stands for upper case
-        products[{'1', 'L'}] = '1'; // L stands for lower case
-        products[{'1', 'D'}] = '1'; // D stands for digit 
-        products[{'1', '"'}] = '2'; // # stands for other, 3 is accepted state, needs backtrack
+        products[{'1', 'U'}] = '2'; // U stands for upper case
+        products[{'2', 'U'}] = '2'; // U stands for upper case
+        products[{'2', 'L'}] = '2'; // L stands for lower case
+        products[{'2', 'D'}] = '2'; // D stands for digit 
+        products[{'2', '#'}] = '3'; // # stands for other, 3 is accepted state, needs backtrack
         
         char state, edge, ch;
         state = '1';
         string token(1, begin);
         while (fileIN.get(ch) && state != '3') {
-            cout << "Lex Log: Currently checking " << ch << endl; // Debug
+            cout << "findID Log: Currently checking " << ch << endl; // Debug
             int ascii = static_cast<int>(ch);
             if (ascii >= 65 && ascii <= 90)
                 edge = 'U';
@@ -60,7 +60,8 @@ public:
         }
 
         // Backtrack
-        fileIN.unget();
+        fileIN.seekg(-3, ios::cur);
+        cout << "findID Log, cursor at: " << static_cast<char>(fileIN.peek()) << endl;
         token.pop_back();
         
         string type;
@@ -113,7 +114,7 @@ public:
         string state = "0";
         string token;
         while (fileIN.get(ch) && (state != "ACCEPTED" && state != "BACKTRACK")) {
-            // cout << "Lex Log: Currently checking " << ch << endl; // Debug
+            cout << "findOpr Log: Currently checking " << ch << endl; // Debug
             string edge(1, ch);
             try {
                 state = products.at({state, edge});
@@ -132,10 +133,7 @@ public:
     
         return {token, "opr"};
     }
-
-    array<string, 2> findDT() { // DataType
-        return {};
-    }
+    
     array<string, 2> findKW() { // Key Word
         // Lex has gotten any char in {f, c, r, u, w, i, e} (first letter of all keywords)
         // grammar products map for finding variables
@@ -192,6 +190,7 @@ public:
         string state = "0";
         string token = "";
         while (fileIN.get(ch) && state != "ACCEPTED") {
+            cout << "findKW Log, Currently checking: " << ch << endl;
             string edge(1, ch);
             state = products.at({state, edge});
             token += ch;
@@ -234,7 +233,7 @@ public:
         state = '1';
         string token(1, begin);
         while (fileIN.get(ch) && state != '2') {
-            cout << "Lex Log: Currently checking " << ch << endl; // Debug
+            cout << "findString Log: Currently checking " << ch << endl; // Debug
             edge = (ch == '"') ? ch : 'A';
 
             cout << "State Diagram Log: " << state << edge << endl; // Debug
@@ -247,7 +246,39 @@ public:
     }
     
     array<string, 2> findNumber() { // numberic literals
-        return {};
+        // grammar products map for finding variables
+        map<
+            array<char, 2>,
+            char // next state
+        > products;
+
+        products[{'0', 'D'}] = '1'; // D stands for Digit 
+        products[{'1', 'D'}] = '1';
+        products[{'1', '#'}] = '2';
+
+
+        char state, edge, ch;
+        state = '0';
+        string token = "";
+        while (fileIN.get(ch) && state != '2') {
+            cout << "findID Log: Currently checking " << ch << endl; // Debug
+            int ascii = static_cast<int>(ch);
+            if (ascii >= 48 && ascii <= 57)
+                edge = 'D';
+            else 
+                edge = '#';
+
+            cout << "State Diagram Log: " << state << edge << endl; // Debug
+            state = products.at({state, edge}); // throws error if token must be DECLINED.
+            
+            token += ch;
+        }
+
+        fileIN.unget();
+        cout << "findID Log, cursor at: " << static_cast<char>(fileIN.peek()) << endl;
+        token.pop_back();
+        
+        return {token, "num"};       
     }
 
 // public:
@@ -259,14 +290,82 @@ public:
     }
 
     vector<array<string, 2>> scan() { // where everything gets connected
-        char ch;
-        while (fileIN.get(ch)) {
-            if (ch == '$' || ch == '&' || ch == '@') 
+        while (fileIN.peek() != EOF) {
+        char ch  = fileIN.peek(); // to see what the next character is and decide which function to call
+            int ascii = static_cast<int>(ch);
+            if (ch == '$' || ch == '&' || ch == '@') { // findID
+                fileIN.get(ch);
                 try {
                     tokens.push_back(this -> findID(ch));
+                    cout << "Scan Log: token appended." << endl;
                 } catch (const out_of_range& e) {
-                    cout << e.what();
+                    cout << e.what() << endl;
                 }
+            }
+            else if (
+                ch == 'f' ||
+                ch == 'c' ||
+                ch == 'r' ||
+                ch == 'u' ||
+                ch == 'w' ||
+                ch == 'i' ||
+                ch == 'e'
+            ) { // findKW
+                cout << "Scan Log, Currently checking: " << ch << endl;
+
+                try {
+                    tokens.push_back(this -> findKW());
+                    cout << "Scan Log: token appended." << endl;
+                } catch (const out_of_range& e) {
+                    cout << e.what() << endl;
+                }
+            } else if (
+                ascii >= 42 && ascii <= 47 ||
+                ascii >= 60 && ascii <= 62 ||
+                ch == 'd' ||
+                ch == 'i'
+            ) {
+                cout << "Scan Log, Currently checking: " << ch << endl;
+
+                try {
+                    tokens.push_back(this -> findOpr());
+                    cout << "Scan Log: token appended." << endl;
+                } catch (const out_of_range& e) {
+                    cout << e.what() << endl;
+                }
+
+            } else if ( // findDel
+                ch == '[' ||
+                ch == ']' ||
+                ch == '{' ||
+                ch == '}' ||
+                ch == '(' ||
+                ch == ')' ||
+                ch == ';'
+            ) {
+                try {
+                    tokens.push_back(this -> findDel());
+                    cout << "Scan Log: token appended." << endl;
+                } catch (const out_of_range& e) {
+                    cout << e.what() << endl;
+                }
+            } else if (ascii >= 48 && ascii <= 57) { // findString
+                try {
+                    tokens.push_back(this -> findNumber());
+                    cout << "Scan Log: token appended." << endl;
+                } catch (const out_of_range& e) {
+                    cout << e.what() << endl;
+                }
+            } else if (ch == '"') { // findString
+                fileIN.get(ch);
+                try {
+                    tokens.push_back(this -> findString(ch));
+                    cout << "Scan Log: token appended." << endl;
+                } catch (const out_of_range& e) {
+                    cout << e.what() << endl;
+                }
+            } else 
+                fileIN.get(ch);
         }
 
         return tokens;
@@ -275,7 +374,7 @@ public:
 
 
 int main() {
-    string fileName = "test.txt";
+    string fileName = "input.txt";
     ifstream file(fileName);
     if (!file.is_open()) {
         cout << "Couldn't find file: " + fileName << endl;
@@ -283,26 +382,19 @@ int main() {
     }
 
     Scanner scanner(file);
-    // vector<array<string, 2>> result = scanner.scan();
+
+    ofstream outfile("tokens.txt");
+    vector<array<string, 2>> result = scanner.scan();
 
 
+    for (array token:result) {
+        for (string s:token) {
+            outfile << s + " ";
+        }
+        outfile << endl;
+    }
     
-    // Debug
-    
-    char begin;
-    // file.get(begin);
-    array<string, 2> result = scanner.findKW();
-
-    // for (array token:result) {
-    //     for (string s:token) {
-    //         cout << s + " ";
-    //     }
-    //     cout << endl;
-    // }
-
-    for (string s : result) 
-        cout << s << ' ';
-
     file.close();
+    outfile.close();
     return 0;
 }

@@ -1,0 +1,5 @@
+while [$Scj] {
+    for [&Gan];
+}
+
+$Bodj + 123 + "dpinw"

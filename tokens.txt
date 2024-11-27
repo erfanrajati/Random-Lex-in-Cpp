@@ -1,0 +1,15 @@
+while KeyWord 
+[ del 
+$Scj var 
+] del 
+{ del 
+[ del 
+&Gan func 
+] del 
+; del 
+} del 
+$Bodj var 
++ opr 
+123 num 
++ opr 
+"dpinw" str 
